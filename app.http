@@ -1,0 +1,47 @@
+//API-2 URL
+GET http://localhost:3000/todos/3/ 
+### 
+
+//API-6 URL
+DELETE http://localhost:3000/todos/5/
+### 
+
+//API-3 URL 
+GET http://localhost:3000/agenda/?date=2021-01-12
+### 
+
+//API-4 URL
+POST http://localhost:3000/todos/ 
+Content-Type:application/json 
+
+{
+ "id": 6,
+ "todo": "Finalize event theme",
+ "priority": "LOW",
+ "status": "TO DO",
+ "category": "HOME",
+ "dueDate": "2021-13-15"
+}
+###
+
+PUT http://localhost:3000/todos/1/ 
+Content-Type:application/json 
+
+{ "dueDate": "2021-01-12" }
+### 
+
+GET http://localhost:3000/todos/?status=TO%20DO
+###
+
+GET http://localhost:3000/todos/?priority=HIGH
+###  
+
+GET http://localhost:3000/todos/?search_q=Clean
+### 
+
+GET http://localhost:3000/todos/?category=WORK
+###
+
+GET http://localhost:3000/todos/?priority=HIGH&status=TO%20DO 
+### 
+
