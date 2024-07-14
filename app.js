@@ -269,100 +269,91 @@ app.put("/todos/:todoId/", async (request, response) => {
   }
 });
 
-const hasStatus = (requstQuery) => {
-  return requstQuery.status !== undefined;
-};
-
-const hasStatusCheck = (requestQuery) => {
-  if (
-    requestQuery.status === "DONE" ||
-    requestQuery.status === "IN PROGRESS" ||
-    requestQuery.status === "TO DO"
-  ) {
-    let query = `SELECT * FROM todo WHERE status='${requestQuery.status}';`;
-    return query;
-  } else {
-    errorText = "Invalid Todo Status";
-  }
-};
-
-const hasPriority = (requestQuery) => {
-  return requestQuery.priority !== undefined;
-};
-
-const hasPriorityCheck = (requestQuery) => {
-  if (
-    requestQuery.priority === "LOW" ||
-    requestQuery.priority === "HIGH" ||
-    requestQuery.priority === "MEDIUM"
-  ) {
-    let query = `SELECT * FROM todo WHERE priority='${requestQuery.priority}';`;
-    return query;
-  } else {
-    errorText = "Invalid Todo Priority";
-  }
-};
-
-const hasSearch_q = (requestQuery) => {
-  return requestQuery.search_q !== undefined;
-};
-
-const hasSearch_qCheck = (requestQuery) => {
-  let query = `SELECT * FROM todo WHERE todo LIKE '%${requestQuery.search_q}%';`;
-  return query;
-};
-
-const hasCategory = (requestQuery) => {
-  return requestQuery.category !== undefined;
-};
-
-const hasCategoryCheck = (requestQuery) => {
-  let category = requestQuery.category;
-  if (category === "WORK" || category === "HOME" || category === "LEARNING") {
-    let query = `SELECT * FROM todo WHERE category='${category}';`;
-    return query;
-  } else {
-    errorText = "Invalid Todo Category";
-  }
-};
-
-let errorText = " ";
-let getTodoQuery = " ";
-
 //API-1
-app.get("/todos/", async (request, response) => {
-  let databaseResponse = null;
-  const { search_q = "", status, priority, category } = request.query;
-  const getTodosFromDb = async () => {
-    try {
-      databaseResponse = await database.all(getTodoQuery);
-      let responseList = databaseResponse.map((eachtodo) => {
-        let result = convertTodoObjectToResponse(eachtodo);
-        return result;
-      });
-      response.send(responseList);
-    } catch (e) {
-      response.status(400);
-      response.send(errorText);
+const checkIsQueryKeysValid = (keys, queryParams) => {
+  const isKeysValid = keys.every(
+    (eachitem) =>
+      eachitem === "priority" ||
+      eachitem === "status" ||
+      eachitem === "category" ||
+      eachitem === "search_q"
+  );
+  if (isKeysValid) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+let errorTexts = [];
+
+const checkIsQueryValuesValid = (keys, queryValues) => {
+  let checkList = [];
+  errorTexts = [];
+  keys.forEach((eachitem) => {
+    if (eachitem === "status") {
+      if (
+        queryValues.status === "TO DO" ||
+        queryValues.status === "IN PROGRESS" ||
+        queryValues.status === "DONE"
+      ) {
+        checkList.push(true);
+      } else {
+        checkList.push(false);
+        errorTexts.push("Invalid Status");
+      }
+    } else if (eachitem === "priority") {
+      if (
+        queryValues.priority === "LOW" ||
+        queryValues.priority === "MEDIUM" ||
+        queryValues.priority === "HIGH"
+      ) {
+        checkList.push(true);
+      } else {
+        checkList.push(false);
+        errorTexts.push("Invalid Priority");
+      }
+    } else if (eachitem === "category") {
+      if (
+        queryValues.category === "WORK" ||
+        queryValues.category === "HOME" ||
+        queryValues.category === "LEARNING"
+      ) {
+        checkList.push(true);
+      } else {
+        checkList.push(false);
+        errorTexts.push("Invalid Category");
+      }
     }
-  };
-  switch (true) {
-    case hasStatus(request.query):
-      getTodoQuery = hasStatusCheck(request.query);
-      getTodosFromDb();
-      break;
-    case hasPriority(request.query):
-      getTodoQuery = hasPriorityCheck(request.query);
-      getTodosFromDb();
-      break;
-    case hasSearch_q(request.query):
-      getTodoQuery = hasSearch_qCheck(request.query);
-      getTodosFromDb();
-      break;
-    case hasCategory(request.query):
-      getTodoQuery = hasCategoryCheck(request.query);
-      getTodosFromDb();
-      break;
+  });
+  const check = checkList.every((eachitem) => eachitem === true);
+  return check;
+};
+
+app.get("/todos/", async (request, response) => {
+  const queryParams = request.query;
+  const keys = Object.keys(queryParams);
+  const isQueryKeysValid = checkIsQueryKeysValid(keys);
+  if (isQueryKeysValid) {
+    const isQueryValuesValid = checkIsQueryValuesValid(keys, queryParams);
+    if (isQueryValuesValid) {
+      const {
+        search_q = "",
+        priority = "",
+        status = "",
+        category = "",
+      } = request.query;
+      const getTodosQuery = `SELECT * FROM todo WHERE priority LIKE '%${priority}%' AND status LIKE '%${status}%' AND category LIKE '%${category}%' AND todo LIKE '%${search_q}%';`;
+      const databaseResponse = await database.all(getTodosQuery);
+      response.status(200);
+      response.send(databaseResponse);
+    } else {
+      response.status(400);
+      response.send(errorTexts.join(", "));
+    }
+  } else {
+    response.status(400);
+    response.send("Invalid Query Parameters Keys");
   }
 });
 
