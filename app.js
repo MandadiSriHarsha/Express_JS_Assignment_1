@@ -270,7 +270,7 @@ app.put("/todos/:todoId/", async (request, response) => {
 });
 
 //API-1
-const checkIsQueryKeysValid = (keys, queryParams) => {
+const checkIsQueryKeysValid = (keys) => {
   const isKeysValid = keys.every(
     (eachitem) =>
       eachitem === "priority" ||
@@ -278,11 +278,7 @@ const checkIsQueryKeysValid = (keys, queryParams) => {
       eachitem === "category" ||
       eachitem === "search_q"
   );
-  if (isKeysValid) {
-    return true;
-  } else {
-    return false;
-  }
+  return isKeysValid
 };
 
 let errorTexts = [];
