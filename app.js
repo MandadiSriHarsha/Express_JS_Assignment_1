@@ -188,17 +188,14 @@ app.put("/todos/:todoId/", async (request, response) => {
   }
   const getPreviousTodoQuery = `SELECT * FROM todo WHERE id=${todoId};`;
   const previousDatabaseResponse = await database.get(getPreviousTodoQuery);
-  const {
-    todo = previousDatabaseResponse.todo,
-    priority = previousDatabaseResponse.priority,
-    status = previousDatabaseResponse.status,
-    category = previousDatabaseResponse.category,
-    dueDate = previousDatabaseResponse.due_date,
-  } = request.body;
   if (previousDatabaseResponse !== undefined) {
     if (updateColumn === "Status") {
-      if (status === "DONE" || status === "TO DO" || status === "IN PROGRESS") {
-        const updateQuery = `UPDATE todo SET todo='${todo}',priority='${priority}',category='${category}',status='${status}',due_date='${dueDate}' WHERE id=${todoId};`;
+      if (
+        requestBody.status === "DONE" ||
+        requestBody.status === "TO DO" ||
+        requestBody.status === "IN PROGRESS"
+      ) {
+        const updateQuery = `UPDATE todo SET status='${requestBody.status}' WHERE id=${todoId};`;
         await database.run(updateQuery);
         response.send("Status Updated");
       } else {
@@ -207,8 +204,12 @@ app.put("/todos/:todoId/", async (request, response) => {
       }
     }
     if (updateColumn === "Priority") {
-      if (priority === "LOW" || priority === "MEDIUM" || priority === "HIGH") {
-        const updateQuery = `UPDATE todo SET todo='${todo}',priority='${priority}',category='${category}',status='${status}',due_date='${dueDate}' WHERE id=${todoId};`;
+      if (
+        requestBody.priority === "LOW" ||
+        requestBody.priority === "MEDIUM" ||
+        requestBody.priority === "HIGH"
+      ) {
+        const updateQuery = `UPDATE todo SET priority='${requestBody.priority}' WHERE id=${todoId};`;
         await database.run(updateQuery);
         response.send("Priority Updated");
       } else {
@@ -218,11 +219,11 @@ app.put("/todos/:todoId/", async (request, response) => {
     }
     if (updateColumn === "Category") {
       if (
-        category === "WORK" ||
-        category === "HOME" ||
-        category === "LEARNING"
+        requestBody.category === "WORK" ||
+        requestBody.category === "HOME" ||
+        requestBody.category === "LEARNING"
       ) {
-        const updateQuery = `UPDATE todo SET todo='${todo}',priority='${priority}',category='${category}',status='${status}',due_date='${dueDate}' WHERE id=${todoId};`;
+        const updateQuery = `UPDATE todo SET category='${requestBody.category}' WHERE id=${todoId};`;
         await database.run(updateQuery);
         response.send("Category Updated");
       } else {
@@ -231,12 +232,17 @@ app.put("/todos/:todoId/", async (request, response) => {
       }
     }
     if (updateColumn === "Todo") {
-      const updateQuery = `UPDATE todo SET todo='${todo}',priority='${priority}',category='${category}',status='${status}',due_date='${dueDate}' WHERE id=${todoId};`;
-      await database.run(updateQuery);
-      response.send("Todo Updated");
+      if (requestBody.todo.length > 1) {
+        const updateQuery = `UPDATE todo SET todo='${requestBody.todo}' WHERE id=${todoId};`;
+        await database.run(updateQuery);
+        response.send("Todo Updated");
+      } else {
+        response.status(400);
+        response.send("Invalid Todo Text");
+      }
     }
     if (updateColumn === "Due Date") {
-      let oldDate = new Date(dueDate);
+      let oldDate = new Date(requestBody.dueDate);
       let isOldDateValid = isValid(new Date(oldDate));
       if (isOldDateValid) {
         let year = oldDate.getFullYear();
@@ -244,9 +250,14 @@ app.put("/todos/:todoId/", async (request, response) => {
         let day = oldDate.getDate();
         let newDate = format(new Date(year, month, day), "yyyy-MM-dd");
         let isNewDateValid = isValid(new Date(newDate));
-        const updateQuery = `UPDATE todo SET todo='${todo}',priority='${priority}',category='${category}',status='${status}',due_date='${newDate}' WHERE id=${todoId};`;
-        await database.run(updateQuery);
-        response.send("Due Date Updated");
+        if (isNewDateValid) {
+          const updateQuery = `UPDATE todo SET due_date='${newDate}' WHERE id=${todoId};`;
+          await database.run(updateQuery);
+          response.send("Due Date Updated");
+        } else {
+          response.status(400);
+          response.send("Invalid Due Date");
+        }
       } else {
         response.status(400);
         response.send("Invalid Due Date");
