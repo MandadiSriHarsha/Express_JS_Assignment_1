@@ -105,54 +105,62 @@ app.get("/agenda/", async (request, response) => {
 //API-4
 app.post("/todos/", async (request, response) => {
   let { id, todo, priority, status, category, dueDate } = request.body;
-  const isDateValid = isValid(new Date(dueDate));
-  if (isDateValid === true) {
-    let oldDate = new Date(dueDate);
-    let year = oldDate.getFullYear();
-    let month = oldDate.getMonth();
-    let day = oldDate.getDate();
-    let newDate = format(new Date(year, month, day), "yyyy-MM-dd");
-    const checkCategoryAndDate = async () => {
-      if (
-        category === "WORK" ||
-        category === "HOME" ||
-        category === "LEARNING"
-      ) {
-        if (isDateValid) {
-          const postTodoQuery = `INSERT INTO todo(id,todo,priority,status,category,due_date) VALUES(${id},'${todo}','${priority}','${status}','${category}','${newDate}');`;
-          await database.run(postTodoQuery);
-          response.status(200);
-          response.send("Todo Successfully Added");
-        } else {
-          response.status(400);
-          response.send("Invalid Due Date");
-        }
-      } else {
-        response.status(400);
-        response.send("Invalid Todo Category");
-      }
-    };
-    const checkPriorityAndStatus = async () => {
-      if (priority === "LOW" || priority === "HIGH" || priority === "MEDIUM") {
+  const isDueDateValid = isValid(new Date(dueDate));
+  if (typeof id === "number") {
+    if (todo.length > 1) {
+      if (priority === "LOW" || priority === "MEDIUM" || priority === "HIGH") {
         if (
           status === "TO DO" ||
           status === "IN PROGRESS" ||
           status === "DONE"
         ) {
-          checkCategoryAndDate();
+          if (
+            category === "LEARNING" ||
+            category === "WORK" ||
+            category === "HOME"
+          ) {
+            if (isDueDateValid) {
+              const newDate = new Date(dueDate);
+              const year = newDate.getFullYear();
+              const month = newDate.getMonth();
+              const date = newDate.getDate();
+              const formattedDate = format(
+                new Date(year, month, date),
+                "yyyy-MM-dd"
+              );
+              const isFormattedDateValid = isValid(new Date(formattedDate));
+              if (isFormattedDateValid) {
+                const createTodoQuery = `INSERT INTO todo(id,todo,priority,status,category,due_date) VALUES(${id},'${todo}','${priority}','${status}','${category}','${formattedDate}')`;
+                await database.run(createTodoQuery);
+                response.status(200);
+                response.send("Todo Created Successfully");
+              } else {
+                response.status(400);
+                response.send("Invalid Due Date");
+              }
+            } else {
+              response.status(400);
+              response.send("Invalid Due Date");
+            }
+          } else {
+            response.status(400);
+            response.send("Invalid Category");
+          }
         } else {
           response.status(400);
-          response.send("Invalid Todo Status");
+          response.send("Invalid Status");
         }
       } else {
         response.status(400);
-        response.send("Invalid Todo Priority");
+        response.send("Invalid Priority");
       }
-    };
-    checkPriorityAndStatus();
+    } else {
+      response.status(400);
+      response.send("Invalid Todo Text");
+    }
   } else {
     response.status(400);
-    response.send("Invalid Due Date");
+    response.send("Invalid Todo Id");
   }
 });
 
