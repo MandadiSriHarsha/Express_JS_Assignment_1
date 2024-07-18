@@ -7,6 +7,8 @@ const format = require("date-fns/format");
 const isValid = require("date-fns/isValid");
 const path = require("path");
 const databasePath = path.join(__dirname, "todoApplication.db");
+const cors = require("cors");
+app.use(cors());
 let database = null;
 
 const initializeDatabaseAndServer = async () => {
@@ -278,7 +280,7 @@ const checkIsQueryKeysValid = (keys) => {
       eachitem === "category" ||
       eachitem === "search_q"
   );
-  return isKeysValid
+  return isKeysValid;
 };
 
 let errorTexts = [];

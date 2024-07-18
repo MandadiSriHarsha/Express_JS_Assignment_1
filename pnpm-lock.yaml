@@ -1,6 +1,7 @@
 lockfileVersion: 5.3
 
 specifiers:
+  cors: ^2.8.5
   date-fns: 2.19.0
   express: 4.17.1
   nodemon: 2.0.7
@@ -8,6 +9,7 @@ specifiers:
   sqlite3: 5.0.2
 
 dependencies:
+  cors: 2.8.5
   date-fns: 2.19.0
   express: 4.17.1
   nodemon: 2.0.7
@@ -334,6 +336,14 @@ packages:
 
   /core-util-is/1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
+    dev: false
+
+  /cors/2.8.5:
+    resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
+    engines: {node: '>= 0.10'}
+    dependencies:
+      object-assign: 4.1.1
+      vary: 1.1.2
     dev: false
 
   /crypto-random-string/2.0.0:
